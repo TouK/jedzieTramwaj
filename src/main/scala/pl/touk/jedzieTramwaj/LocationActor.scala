@@ -33,7 +33,11 @@ class LocationActor extends Actor {
   }
 
   override def receive = {
-    case TramsRequest(stop) => sender ! prepareLocations(stop.loc, stop.lines)
+    case TramsRequestByStop(stop) => sender ! prepareLocations(stop.loc, stop.lines)
+    case TramsRequestByLines(list) => sender ! tramLocations.filter(loc => list.contains(loc.id.line))
+      .map(loc => TramWithSpeed(loc, speed(loc)))
+    case AllTramsRequest => sender ! tramLocations.map(loc => TramWithSpeed(loc, speed(loc)))
+
     case locations: ValuesList =>
       tramLocations = locations.result.map(TramLocationParser.parseLocation)
       recalculateExtendedData()
@@ -57,9 +61,11 @@ class LocationActor extends Actor {
 
   private def prepareLocations(point: Location, lineNumbers: Seq[String]) =
     tramLocations.filter(tl => lineNumbers.contains(tl.id.line))
-      .map(loc => TramWithDistance(loc, tramData(loc.id).speedKmph.getOrElse(0),
+      .map(loc => TramWithDistance(loc, speed(loc),
         loc.point.location.distanceInMeters(point)))
       .sortBy(_.distanceInMeters)
+
+  private def speed(loc: TramLocation) : Double = tramData(loc.id).speedKmph.getOrElse(0)
 
   case class ExtendedTramData(lastLocations: List[LocationPoint] = List()) {
     def speedKmph : Option[Double] = lastLocations match {
@@ -70,7 +76,7 @@ class LocationActor extends Actor {
 
     def addLocation(point : LocationPoint) = {
       val locations = lastLocations match {
-        case first::last if first.date != point.date => lastLocations
+        case first::last if first.date != point.date => point::lastLocations
         case _ => lastLocations
       }
       //no tak, tak, to jest niewydajne...

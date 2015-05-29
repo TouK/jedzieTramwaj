@@ -11,7 +11,7 @@ import akka.stream.ActorFlowMaterializer
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import pl.touk.jedzieTramwaj.model.Location
-import pl.touk.jedzieTramwaj.protocol.{TramsRequest, TramsResponse}
+import pl.touk.jedzieTramwaj.protocol._
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -37,13 +37,23 @@ object MainApp extends App with JsonProtocol with SprayJsonSupport {
   println(busStopsMap)
 
   def getResult(arg : Long) : Future[TramsResponse] =
-    (location ? TramsRequest(busStopsMap(arg))).mapTo[TramsResponse]
+    (location ? TramsRequestByStop(busStopsMap(arg))).mapTo[TramsResponse]
 
   val routes = {
-    logRequestResult("jedzieTramwaj") {
-      pathPrefix("tramwaje") {
+    //logRequestResult("jedzieTramwaj") {
+      pathPrefix("tramwajePrzystanku") {
         (get & path(LongNumber)) { przystanekId =>
-          complete(getResult(przystanekId))
+          complete((location ? TramsRequestByStop(busStopsMap(przystanekId))).mapTo[TramsResponse])
+        }
+      } ~
+      pathPrefix("tramwajeLinii") {
+        (get & path(Segment)) { linia =>
+          complete((location ? TramsRequestByLines(linia.split(",").toList)).mapTo[List[TramWithSpeed]])
+        }
+      } ~
+      pathPrefix("tramwaje") {
+        get {
+          complete((location ? AllTramsRequest).mapTo[List[TramWithSpeed]])
         }
       } ~
       pathPrefix("przystanki") {
@@ -53,7 +63,7 @@ object MainApp extends App with JsonProtocol with SprayJsonSupport {
           }
         }
       }
-    }
+    //}
   }
 
   Http().bindAndHandle(routes, config.getString("http.interface"), config.getInt("http.port"))
