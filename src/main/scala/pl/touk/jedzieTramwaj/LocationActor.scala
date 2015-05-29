@@ -3,16 +3,17 @@ package pl.touk.jedzieTramwaj
 
 import java.time.LocalDateTime
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
+import java.time.temporal.ChronoUnit
 
 import akka.actor.Actor
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import pl.touk.jedzieTramwaj.MainApp._
+import pl.touk.jedzieTramwaj.model._
+import pl.touk.jedzieTramwaj.protocol._
 import spray.json.DefaultJsonProtocol
 
 import scala.concurrent.duration._
 import scala.util.Failure
-import model._
-import protocol._
 
 class LocationActor extends Actor {
 
@@ -20,7 +21,7 @@ class LocationActor extends Actor {
 
   var tramLocations = List[TramLocation]()
 
-  var tramToLocations : Map[TramId, List[LocationPoint]] = Map()
+  var tramData : Map[TramId, ExtendedTramData] = Map()
 
   @throws[Exception](classOf[Exception])
   override def preStart() = {
@@ -29,8 +30,6 @@ class LocationActor extends Actor {
   }
 
   override def receive = {
-    case a: String =>
-      sender ! Right(Result(tramLocations.head.toString))
     case TramsRequest(point, numbers) => sender ! prepareLocations(point, numbers)
     case locations: ValuesList =>
       tramLocations = locations.result.map(TramLocationParser.parseLocation)
@@ -47,6 +46,14 @@ class LocationActor extends Actor {
 
   private def prepareLocations(point: Location, lineNumbers: List[Int]) =
     tramLocations.filter(tl => lineNumbers.contains(tl.id.line)).sortBy(_.point.location.distanceInMeters(point))
+
+  case class ExtendedTramData(lastLocations: List[LocationPoint]) {
+    def speedKmph : Option[Double] = lastLocations match {
+      case a::b::c => Some(a.location.distanceInMeters(b.location) * 0.001 /
+        ChronoUnit.HOURS.between(a.date, b.date))
+      case _ => None
+    }
+  }
 
 }
 

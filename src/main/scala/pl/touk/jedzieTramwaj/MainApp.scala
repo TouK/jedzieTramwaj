@@ -11,6 +11,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.pattern._
+import pl.touk.jedzieTramwaj.model.Location
+import pl.touk.jedzieTramwaj.protocol.{TramsRequest, TramsResponse}
 import spray.json.DefaultJsonProtocol
 import scala.concurrent.duration._
 
@@ -18,7 +20,9 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 
 
-object MainApp extends App with DefaultJsonProtocol {
+object MainApp extends App {
+  import modelJson._
+
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorFlowMaterializer()
@@ -27,26 +31,19 @@ object MainApp extends App with DefaultJsonProtocol {
   val config = ConfigFactory.load()
   val logger = Logging(system, getClass)
 
-  case class Result(res: String)
-
-
-  implicit val resultFormat = jsonFormat1(Result.apply)
-
-
   val location = system.actorOf(Props.create(classOf[LocationActor]))
 
-
-  def getResult(arg : String) : Future[Either[String, Result]] = (location ? arg).mapTo[Either[String, Result]]
+  def getResult(arg : String) : Future[TramsResponse] =
+    (location ? TramsRequest(Location(52.226182,20.9971062), arg.split(",").map(_.toInt).toList))
+      .mapTo[TramsResponse]
 
   val routes = {
     logRequestResult("jedzieTramwaj") {
       pathPrefix("przystanek") {
         (get & path(Segment)) { przystanek =>
           complete {
-            getResult(przystanek).map[ToResponseMarshallable] {
-              case Right(ipInfo) => ipInfo
-              case Left(errorMessage) => BadRequest -> errorMessage
-            }
+            //yyy?
+            getResult(przystanek).map[ToResponseMarshallable](id => id)
           }
         }
       }
