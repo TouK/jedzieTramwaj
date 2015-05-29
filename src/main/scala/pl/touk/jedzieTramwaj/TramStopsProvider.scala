@@ -19,10 +19,7 @@ object tramStopsProvider {
   }
 
   private def isTramLine(line: String): Boolean = {
-    catching(classOf[NumberFormatException]).opt(line.toDouble) match {
-      case Some(lineInDouble) => lineInDouble < 100
-      case None => false
-    }
+    catching(classOf[NumberFormatException]).opt(line.toDouble).exists(lineInDouble => lineInDouble < 100)
   }
 
   private def hasTramsOnly(busStop: BusStop): Boolean = {

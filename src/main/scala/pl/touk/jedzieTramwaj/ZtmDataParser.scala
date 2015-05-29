@@ -50,7 +50,7 @@ class ZtmDataParser {
   }
 
   def parseLines(content: String): Seq[String] = {
-    content.substring(40, content.length).trim.split(" +").map(_.replace("\\^", ""))
+    content.substring(40, content.length).trim.split(" +").map(_.replace("^", ""))
   }
 
   def indnentOnContent(stream: InputStream): Iterator[(Int, String)] = {

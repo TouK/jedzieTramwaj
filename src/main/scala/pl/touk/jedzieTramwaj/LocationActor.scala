@@ -7,7 +7,6 @@ import java.time.temporal.ChronoUnit
 
 import akka.actor.Actor
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import pl.touk.jedzieTramwaj.MainApp._
 import pl.touk.jedzieTramwaj.model._
 import pl.touk.jedzieTramwaj.protocol._
