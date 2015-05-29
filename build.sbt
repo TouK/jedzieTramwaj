@@ -1,3 +1,5 @@
+assemblyJarName in assembly := s"${name.value}-${version.value}.jar"
+test in assembly := {}
 
 val akkaHttp = "1.0-RC3"
 
@@ -10,6 +12,8 @@ libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json-experimental
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.5" % "test"
 
-name := "Jedzie tramwaj"
+name := "jedzieTramwaj"
+
+version := "0.1"
 
 scalaVersion := "2.11.5"

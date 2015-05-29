@@ -17,6 +17,8 @@ import scala.util.Failure
 
 class LocationActor extends Actor {
 
+  val reloadDelay = 30 seconds
+
   val locationFetcher = new LocationFetcher
 
   var tramLocations = List[TramLocation]()
@@ -26,7 +28,7 @@ class LocationActor extends Actor {
   @throws[Exception](classOf[Exception])
   override def preStart() = {
     reloadLocations()
-    context.system.scheduler.schedule(10 seconds, 10 seconds)(reloadLocations())
+    context.system.scheduler.schedule(reloadDelay, reloadDelay)(reloadLocations())
   }
 
   override def receive = {
@@ -45,7 +47,9 @@ class LocationActor extends Actor {
   }
 
   private def prepareLocations(point: Location, lineNumbers: List[Int]) =
-    tramLocations.filter(tl => lineNumbers.contains(tl.id.line)).sortBy(_.point.location.distanceInMeters(point))
+    tramLocations.filter(tl => lineNumbers.contains(tl.id.line))
+      .map(loc => TramWithDistance(loc, loc.point.location.distanceInMeters(point)))
+      .sortBy(_.distanceInMeters)
 
   case class ExtendedTramData(lastLocations: List[LocationPoint]) {
     def speedKmph : Option[Double] = lastLocations match {

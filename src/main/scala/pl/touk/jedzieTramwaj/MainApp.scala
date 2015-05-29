@@ -21,7 +21,8 @@ import scala.concurrent.Future
 
 
 object MainApp extends App {
-  import modelJson._
+  import protocolJson._
+
 
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher

@@ -16,7 +16,7 @@ object model {
     //http://stackoverflow.com/questions/8588095/calculate-distance-with-2-geo-points
     def distanceInMeters(location: Location) = {
       toRadians(acos(sin(toRadians(location.lat)) * sin(toRadians(lat)) + cos(toRadians(location.lat))
-        * cos(toRadians(lat)) * cos(toRadians(location.lon - lon)))) * 60 * 1.1515 * 1.609344 * 1000
+        * cos(toRadians(lat)) * cos(toRadians(location.lon - lon)))) * 60 * 1.1515 * 1.609344 * 1000 * 1000
     }
   }
 
