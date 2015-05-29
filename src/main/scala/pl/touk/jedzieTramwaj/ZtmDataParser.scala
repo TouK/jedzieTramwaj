@@ -62,6 +62,6 @@ class ZtmDataParser {
   }
 }
 
-case class BusStop(id: Long, name: String, description: String, direction: String, loc: Location, lines: Seq[String] = IndexedSeq.empty) {
+case class BusStop(id: Long, name: String, description: String, direction: String, loc: Location, lines: IndexedSeq[String] = IndexedSeq.empty) {
   def add(next: Seq[String]) = copy(lines = lines ++ next)
 }

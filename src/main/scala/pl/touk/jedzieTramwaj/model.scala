@@ -22,20 +22,20 @@ object model {
 
 }
 
-object modelJson extends DefaultJsonProtocol {
+trait JsonModel extends DefaultJsonProtocol {
   import model._
 
   private val defaultZone: ZoneId = ZoneId.systemDefault()
 
-  implicit val localDate = new JsonFormat[LocalDateTime] {
+  implicit val localDateFormat = new JsonFormat[LocalDateTime] {
     override def write(obj: LocalDateTime) = JsNumber(obj.atZone(defaultZone).toInstant.toEpochMilli)
     override def read(json: JsValue) = json match {
       case a:JsNumber => LocalDateTime.ofInstant(new Date(a.value.longValue()).toInstant, defaultZone)
     }
   }
-  implicit val location = jsonFormat2(Location.apply)
-  implicit val locationPoint = jsonFormat2(LocationPoint.apply)
-  implicit val tramId = jsonFormat3(TramId.apply)
-  implicit val tramLocation = jsonFormat2(TramLocation.apply)
+  implicit val locationFormat = jsonFormat2(Location.apply)
+  implicit val locationPointFormat = jsonFormat2(LocationPoint.apply)
+  implicit val tramIdFormat = jsonFormat3(TramId.apply)
+  implicit val tramLocationFormat = jsonFormat2(TramLocation.apply)
 
 }
