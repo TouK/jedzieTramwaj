@@ -8,6 +8,8 @@ libraryDependencies += "com.typesafe.akka" %% "akka-stream-experimental" % akkaH
 
 libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttp
 
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.5" % "test"
+
 name := "Jedzie tramwaj"
 
 scalaVersion := "2.11.5"
