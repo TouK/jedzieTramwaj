@@ -1,6 +1,7 @@
 package pl.touk.jedzieTramwaj
 
 import org.scalatest.{Matchers, FlatSpec}
+import pl.touk.jedzieTramwaj.model.Location
 
 class ZtmDataParserTest extends FlatSpec with Matchers {
   import org.scalatest.OptionValues._

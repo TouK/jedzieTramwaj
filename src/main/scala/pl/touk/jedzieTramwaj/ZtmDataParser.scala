@@ -2,6 +2,8 @@ package pl.touk.jedzieTramwaj
 
 import java.io.InputStream
 
+import pl.touk.jedzieTramwaj.model.Location
+
 import scala.io.Source
 
 class ZtmDataParser {
