@@ -11,11 +11,13 @@ class ZtmDataParser {
   def parse(stream: InputStream): Seq[BusStop] = {
     var lastName: String = null
     var list = List.empty[Option[BusStop]]
+    var id = 0
     indnentOnContent(stream).foreach {
       case (1, content) =>
         lastName = parseName(content)
       case (3, content) =>
-        list = parseBusStop(content, lastName) :: list
+        list = parseBusStop(content, lastName, id) :: list
+        id += 1
       case (4, content) =>
         val (head :: tail) = list
           list = head.map(_.add(parseLines(content))) :: tail
@@ -28,14 +30,14 @@ class ZtmDataParser {
     content.substring(10, 43).trim.dropRight(1)
   }
 
-  def parseBusStop(content: String, name: String): Option[BusStop] = {
+  def parseBusStop(content: String, name: String, id: Long): Option[BusStop] = {
     for {
       lon <- parseLocationPart(content.substring(112, 126))
       lat <- parseLocationPart(content.substring(129, 138))
     } yield {
       val description = content.substring(34, 68).trim.dropRight(1)
       val direction = content.substring(75, 109).trim.dropRight(1)
-      BusStop(name, description, direction, Location(lon, lat))
+      BusStop(id, name, description, direction, Location(lon, lat))
     }
   }
 
@@ -61,6 +63,6 @@ class ZtmDataParser {
   }
 }
 
-case class BusStop(name: String, description: String, direction: String, loc: Location, lines: Seq[String] = IndexedSeq.empty) {
+case class BusStop(id: Long, name: String, description: String, direction: String, loc: Location, lines: Seq[String] = IndexedSeq.empty) {
   def add(next: Seq[String]) = copy(lines = lines ++ next)
 }

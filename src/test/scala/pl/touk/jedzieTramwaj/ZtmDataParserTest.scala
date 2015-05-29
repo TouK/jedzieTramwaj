@@ -23,7 +23,7 @@ class ZtmDataParserTest extends FlatSpec with Matchers {
 
   it should "parse bus stop" in {
     val content = "         100101   2      Ul./Pl.: TARGOWA,                          Kier.: AL.ZIELENIECKA,                   Y= 52.248670     X= 21.044260"
-    new ZtmDataParser().parseBusStop(content, "foo").value shouldEqual BusStop("foo", "TARGOWA", "AL.ZIELENIECKA", Location(52.248670, 21.044260))
+    new ZtmDataParser().parseBusStop(content, "foo", 1).value shouldEqual BusStop(1, "foo", "TARGOWA", "AL.ZIELENIECKA", Location(52.248670, 21.044260))
   }
 
 }

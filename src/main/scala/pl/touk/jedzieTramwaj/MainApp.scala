@@ -40,7 +40,7 @@ object MainApp extends App {
 
   val routes = {
     logRequestResult("jedzieTramwaj") {
-      pathPrefix("przystanek") {
+      pathPrefix("tramwaje") {
         (get & path(Segment)) { przystanek =>
           complete {
             //yyy?
