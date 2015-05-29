@@ -34,7 +34,7 @@ object MainApp extends App {
 
   val location = system.actorOf(Props.create(classOf[LocationActor]))
 
-  val busStops = new ZtmDataParser().parse(getClass.getResourceAsStream("/ztm.data"))
+  val busStops = tramStopsProvider.busStops
     .map(bs => (bs.id, bs))
     .toMap
   //TODO: usunac...
