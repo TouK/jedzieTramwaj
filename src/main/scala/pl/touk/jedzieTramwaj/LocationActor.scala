@@ -77,6 +77,7 @@ class LocationActor extends Actor {
       val locations = lastLocations match {
         case first::last if first.date != point.date => point::lastLocations
         case Nil => point::Nil
+        case _ => lastLocations
       }
       //no tak, tak, to jest niewydajne...
       copy(lastLocations = locations.take(10))
