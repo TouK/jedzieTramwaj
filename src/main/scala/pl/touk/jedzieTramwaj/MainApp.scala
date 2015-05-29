@@ -41,12 +41,12 @@ object MainApp extends App with JsonProtocol with SprayJsonSupport {
 
   val routes = {
     //logRequestResult("jedzieTramwaj") {
-      pathPrefix("tramwajePrzystanku") {
+      pathPrefix("przystanki") {
         (get & path(LongNumber)) { przystanekId =>
           complete((location ? TramsRequestByStop(busStopsMap(przystanekId))).mapTo[TramsResponse])
         }
       } ~
-      pathPrefix("tramwajeLinii") {
+      pathPrefix("tramwaje") {
         (get & path(Segment)) { linia =>
           complete((location ? TramsRequestByLines(linia.split(",").toList)).mapTo[List[TramWithSpeed]])
         }
