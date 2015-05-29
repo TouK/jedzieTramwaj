@@ -8,11 +8,11 @@ object protocol {
   case class TramsRequest(busStop : BusStop)
   case class TramWithDistance(tram: TramLocation, distanceInMeters: Double)
   type TramsResponse = List[TramWithDistance]
+  type BusStopsResponse = List[BusStop]
 }
 
-object protocolJson extends DefaultJsonProtocol {
-  import modelJson._
-
-  implicit val tramWithDistance = jsonFormat2(TramWithDistance.apply)
+trait JsonProtocol extends DefaultJsonProtocol with JsonModel{
+  implicit val tramWithDistanceFormat = jsonFormat2(TramWithDistance.apply)
+  implicit val busStopsFormat = jsonFormat6(BusStop.apply)
 }
 
