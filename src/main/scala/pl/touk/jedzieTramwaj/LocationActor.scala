@@ -1,23 +1,14 @@
 
 package pl.touk.jedzieTramwaj
 
-import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 
 import akka.actor.Actor
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.scaladsl.{Flow, Sink, Source}
-import com.typesafe.config.ConfigFactory
 import pl.touk.jedzieTramwaj.MainApp._
 import spray.json.DefaultJsonProtocol
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Failure
 
@@ -51,35 +42,15 @@ class LocationActor extends Actor {
 
 }
 
-class LocationFetcher extends DefaultJsonProtocol {
+class LocationFetcher extends DefaultJsonProtocol with UMFetcher {
 
-  val config = ConfigFactory.load()
+  def url = "/api/action/dbstore_get/"
 
-  lazy val umConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
-    Http().outgoingConnectionTls(config.getString("services.umHost"), config.getInt("services.umPort"))
+  implicit val valueFormat = jsonFormat2(Value.apply)
+  implicit val valuesFormat = jsonFormat1(Values.apply)
+  implicit val valueListFormat = jsonFormat1(ValuesList.apply)
 
-  def umRequest(request: HttpRequest): Future[HttpResponse] =
-    Source.single(request).via(umConnectionFlow).runWith(Sink.head)
-
-  implicit val resultFormat1 = jsonFormat2(Value.apply)
-  implicit val resultFormat2 = jsonFormat1(Values.apply)
-  implicit val resultFormat3 = jsonFormat1(ValuesList.apply)
-
-  def fetchLocations(): Future[ValuesList] = {
-    logger.debug("Starting to fetch locations")
-    val id = "daeea0db-0f9a-498d-9c4f-210897daffd2"
-    umRequest(RequestBuilding.Get(s"/api/action/dbstore_get/?id=$id&apikey=${config.getString("apiKey")}")).flatMap { response =>
-      response.status match {
-        case OK => Unmarshal(response.entity).to[ValuesList]
-        case BadRequest => Future.failed(new Exception("WAAAT?"))
-        case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-          val error = s"UM request failed with status code ${response.status} and entity $entity"
-          logger.error(error)
-          Future.failed(new IOException(error))
-        }
-      }
-    }
-  }
+  def fetchLocations() = fetch[ValuesList]()
 }
 
 case class ValuesList(result: List[Values])
