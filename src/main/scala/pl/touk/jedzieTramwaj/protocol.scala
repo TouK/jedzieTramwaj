@@ -11,8 +11,9 @@ object protocol {
   type BusStopsResponse = List[BusStop]
 }
 
-trait JsonProtocol extends DefaultJsonProtocol with JsonModel{
-  implicit val tramWithDistanceFormat = jsonFormat2(TramWithDistance.apply)
+trait JsonProtocol extends DefaultJsonProtocol with JsonModel {
+
+  implicit val tramWithDistanceFormat = jsonFormat3(TramWithDistance.apply)
   implicit val busStopsFormat = jsonFormat6(BusStop.apply)
 }
 

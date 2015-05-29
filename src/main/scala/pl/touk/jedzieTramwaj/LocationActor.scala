@@ -6,6 +6,7 @@ import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.temporal.ChronoUnit
 
 import akka.actor.Actor
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import pl.touk.jedzieTramwaj.MainApp._
 import pl.touk.jedzieTramwaj.model._
@@ -79,7 +80,7 @@ class LocationActor extends Actor {
 
 }
 
-class LocationFetcher extends DefaultJsonProtocol with UMFetcher {
+class LocationFetcher extends DefaultJsonProtocol with UMFetcher with SprayJsonSupport {
 
   def url = "/api/action/dbstore_get/"
 
