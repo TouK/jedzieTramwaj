@@ -46,11 +46,8 @@ object MainApp extends App {
   val routes = {
     logRequestResult("jedzieTramwaj") {
       pathPrefix("tramwaje") {
-        (get & path(Segment)) { przystanekId =>
-          complete {
-            //yyy?
-            getResult(przystanekId.toLong).map[ToResponseMarshallable](id => id)
-          }
+        (get & path(LongNumber)) { przystanekId =>
+          complete(getResult(przystanekId))
         }
       }
     }
