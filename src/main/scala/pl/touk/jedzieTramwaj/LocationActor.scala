@@ -69,7 +69,7 @@ class LocationActor extends Actor {
   case class ExtendedTramData(lastLocations: List[LocationPoint] = List()) {
     def speedKmph : Option[Double] = lastLocations match {
       case a::b::c => Some(a.location.distanceInMeters(b.location) * 0.001 /
-        ChronoUnit.HOURS.between(a.date, b.date))
+        ChronoUnit.HOURS.between(b.date, a.date))
       case _ => None
     }
 
