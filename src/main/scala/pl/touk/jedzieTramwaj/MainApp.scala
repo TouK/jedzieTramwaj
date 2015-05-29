@@ -43,7 +43,10 @@ object MainApp extends App with JsonProtocol with SprayJsonSupport {
     //logRequestResult("jedzieTramwaj") {
       pathPrefix("przystanki") {
         (get & path(LongNumber)) { przystanekId =>
-          complete((location ? TramsRequestByStop(busStopsMap(przystanekId))).mapTo[TramsResponse])
+          complete((location ? TramsRequestByStop(busStopsMap(przystanekId))).mapTo[TramsResponse].map { trams =>
+            val stop = busStops.find(_.id == przystanekId).get
+            BusStopWithTrams(stop.id, stop.name, stop.description, stop.direction, stop.loc, trams)
+          })
         }
       } ~
       pathPrefix("tramwaje") {
