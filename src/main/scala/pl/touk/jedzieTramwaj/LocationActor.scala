@@ -32,7 +32,7 @@ class LocationActor extends Actor {
   }
 
   override def receive = {
-    case TramsRequest(point, numbers) => sender ! prepareLocations(point, numbers)
+    case TramsRequest(stop) => sender ! prepareLocations(stop.loc, stop.lines)
     case locations: ValuesList =>
       tramLocations = locations.result.map(TramLocationParser.parseLocation)
       logger.debug(s"Fetched ${tramLocations.size}")
@@ -46,7 +46,7 @@ class LocationActor extends Actor {
     }
   }
 
-  private def prepareLocations(point: Location, lineNumbers: List[Int]) =
+  private def prepareLocations(point: Location, lineNumbers: Seq[String]) =
     tramLocations.filter(tl => lineNumbers.contains(tl.id.line))
       .map(loc => TramWithDistance(loc, loc.point.location.distanceInMeters(point)))
       .sortBy(_.distanceInMeters)

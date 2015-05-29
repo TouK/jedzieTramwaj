@@ -34,17 +34,22 @@ object MainApp extends App {
 
   val location = system.actorOf(Props.create(classOf[LocationActor]))
 
-  def getResult(arg : String) : Future[TramsResponse] =
-    (location ? TramsRequest(Location(52.226182,20.9971062), arg.split(",").map(_.toInt).toList))
-      .mapTo[TramsResponse]
+  val busStops = new ZtmDataParser().parse(getClass.getResourceAsStream("/ztm.data"))
+    .map(bs => (bs.id, bs))
+    .toMap
+  //TODO: usunac...
+  println(busStops)
+
+  def getResult(arg : Long) : Future[TramsResponse] =
+    (location ? TramsRequest(busStops(arg))).mapTo[TramsResponse]
 
   val routes = {
     logRequestResult("jedzieTramwaj") {
       pathPrefix("tramwaje") {
-        (get & path(Segment)) { przystanek =>
+        (get & path(Segment)) { przystanekId =>
           complete {
             //yyy?
-            getResult(przystanek).map[ToResponseMarshallable](id => id)
+            getResult(przystanekId.toLong).map[ToResponseMarshallable](id => id)
           }
         }
       }

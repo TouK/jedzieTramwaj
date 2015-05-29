@@ -5,7 +5,7 @@ import pl.touk.jedzieTramwaj.protocol.TramWithDistance
 import spray.json.DefaultJsonProtocol
 
 object protocol {
-  case class TramsRequest(location: Location, lineNumbers: List[Int])
+  case class TramsRequest(busStop : BusStop)
   case class TramWithDistance(tram: TramLocation, distanceInMeters: Double)
   type TramsResponse = List[TramWithDistance]
 }
