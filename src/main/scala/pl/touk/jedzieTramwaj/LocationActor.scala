@@ -35,6 +35,7 @@ class LocationActor extends Actor {
     case TramsRequest(stop) => sender ! prepareLocations(stop.loc, stop.lines)
     case locations: ValuesList =>
       tramLocations = locations.result.map(TramLocationParser.parseLocation)
+      recalculateExtendedData()
       logger.debug(s"Fetched ${tramLocations.size}")
   }
 
@@ -46,16 +47,33 @@ class LocationActor extends Actor {
     }
   }
 
+  private def recalculateExtendedData(): Unit = {
+    val currentTrams = tramLocations.map(_.id)
+    val filtered = tramData.filter(a => currentTrams.contains(a._1))
+    tramData = tramLocations.foldLeft(filtered)((map, tram) =>
+      map.updated(tram.id, map.getOrElse(tram.id, ExtendedTramData()).addLocation(tram.point)))
+  }
+
   private def prepareLocations(point: Location, lineNumbers: Seq[String]) =
     tramLocations.filter(tl => lineNumbers.contains(tl.id.line))
-      .map(loc => TramWithDistance(loc, loc.point.location.distanceInMeters(point)))
+      .map(loc => TramWithDistance(loc, tramData(loc.id).speedKmph.getOrElse(0),
+        loc.point.location.distanceInMeters(point)))
       .sortBy(_.distanceInMeters)
 
-  case class ExtendedTramData(lastLocations: List[LocationPoint]) {
+  case class ExtendedTramData(lastLocations: List[LocationPoint] = List()) {
     def speedKmph : Option[Double] = lastLocations match {
       case a::b::c => Some(a.location.distanceInMeters(b.location) * 0.001 /
         ChronoUnit.HOURS.between(a.date, b.date))
       case _ => None
+    }
+
+    def addLocation(point : LocationPoint) = {
+      val locations = lastLocations match {
+        case first::last if first.date != point.date => lastLocations
+        case _ => lastLocations
+      }
+      //no tak, tak, to jest niewydajne...
+      copy(lastLocations = locations.take(10))
     }
   }
 

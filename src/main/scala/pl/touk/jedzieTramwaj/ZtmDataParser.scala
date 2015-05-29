@@ -17,7 +17,6 @@ class ZtmDataParser {
         lastName = parseName(content)
       case (3, content) =>
         list = parseBusStop(content, lastName, id) :: list
-        id += 1
       case (4, content) =>
         val (head :: tail) = list
           list = head.map(_.add(parseLines(content))) :: tail
