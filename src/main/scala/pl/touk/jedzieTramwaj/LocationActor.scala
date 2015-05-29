@@ -11,6 +11,8 @@ import spray.json.DefaultJsonProtocol
 
 import scala.concurrent.duration._
 import scala.util.Failure
+import model._
+import protocol._
 
 class LocationActor extends Actor {
 
@@ -18,10 +20,21 @@ class LocationActor extends Actor {
 
   var tramLocations = List[TramLocation]()
 
+  var tramToLocations : Map[TramId, List[LocationPoint]] = Map()
+
   @throws[Exception](classOf[Exception])
   override def preStart() = {
     reloadLocations()
     context.system.scheduler.schedule(10 seconds, 10 seconds)(reloadLocations())
+  }
+
+  override def receive = {
+    case a: String =>
+      sender ! Right(Result(tramLocations.head.toString))
+    case TramsRequest(point, numbers) => sender ! prepareLocations(point, numbers)
+    case locations: ValuesList =>
+      tramLocations = locations.result.map(TramLocationParser.parseLocation)
+      logger.debug(s"Fetched ${tramLocations.size}")
   }
 
   private def reloadLocations(): Unit = {
@@ -32,13 +45,8 @@ class LocationActor extends Actor {
     }
   }
 
-  override def receive = {
-    case a: String =>
-      sender ! Right(Result(tramLocations.head.toString))
-    case locations: ValuesList =>
-      tramLocations = locations.result.map(TramLocationParser.parseLocation)
-      logger.debug(s"Fetched ${tramLocations.size}")
-  }
+  private def prepareLocations(point: Location, lineNumbers: List[Int]) =
+    tramLocations.filter(tl => lineNumbers.contains(tl.id.line)).sortBy(_.point.location.distanceInMeters(point))
 
 }
 
@@ -59,12 +67,14 @@ case class Value(key: String, value: String)
 
 object TramLocationParser {
 
-  val format = new DateTimeFormatterBuilder().parseCaseInsensitive.append(DateTimeFormatter.ISO_LOCAL_DATE)
+  val format = new DateTimeFormatterBuilder()
+    .parseCaseInsensitive.append(DateTimeFormatter.ISO_LOCAL_DATE)
     .appendLiteral(' ').append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter
 
   def parseLocation(raw: Values): TramLocation = {
     val value: String => String = (key) => raw.values.find(_.key == key).map(_.value).get
-    TramLocation(value("linia").toInt, LocalDateTime.parse(value("ostatnia_aktualizacja"), format),
-      value("brygada"), Location(value("gps_dlug").toDouble, value("gps_szer").toDouble))
+    TramLocation(TramId(value("linia").toInt, value("brygada"), value("taborowy")),
+      LocationPoint(LocalDateTime.parse(value("ostatnia_aktualizacja"), format),
+      Location(value("gps_szer").toDouble, value("gps_dlug").toDouble)))
   }
 }
