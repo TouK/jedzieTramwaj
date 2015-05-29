@@ -8,7 +8,7 @@ import spray.json.{JsNumber, JsValue, JsonFormat, DefaultJsonProtocol}
 object model {
 
   case class TramLocation(id: TramId, point: LocationPoint)
-  case class TramId(line: Int, brigade: String, sideNumber: String)
+  case class TramId(line: String, brigade: String, sideNumber: String)
   case class LocationPoint(date: LocalDateTime, location: Location)
 
   case class Location(lat: Double, lon: Double) {

@@ -84,7 +84,7 @@ object TramLocationParser {
 
   def parseLocation(raw: Values): TramLocation = {
     val value: String => String = (key) => raw.values.find(_.key == key).map(_.value).get
-    TramLocation(TramId(value("linia").toInt, value("brygada"), value("taborowy")),
+    TramLocation(TramId(value("linia"), value("brygada"), value("taborowy")),
       LocationPoint(LocalDateTime.parse(value("ostatnia_aktualizacja"), format),
       Location(value("gps_szer").toDouble, value("gps_dlug").toDouble)))
   }
