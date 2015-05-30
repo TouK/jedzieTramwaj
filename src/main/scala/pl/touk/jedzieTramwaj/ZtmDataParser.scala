@@ -5,6 +5,7 @@ import java.io.InputStream
 import pl.touk.jedzieTramwaj.model.Location
 
 import scala.io.Source
+import scala.util.control.Exception._
 
 class ZtmDataParser {
 
@@ -42,11 +43,7 @@ class ZtmDataParser {
   }
 
   private def parseLocationPart(str: String): Option[Double] = {
-    try {
-      Some(java.lang.Double.parseDouble(str.trim))
-    } catch {
-      case e: NumberFormatException => None
-    }
+    catching(classOf[NumberFormatException]).opt(str.trim.toDouble)
   }
 
   def parseLines(content: String): Seq[String] = {

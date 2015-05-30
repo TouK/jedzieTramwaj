@@ -68,15 +68,14 @@ class LocationActor extends Actor {
 
   case class ExtendedTramData(lastLocations: List[LocationPoint] = List()) {
     def speedKmph : Option[Double] = lastLocations match {
-      case a::b::c => Some(a.location.distanceInMeters(b.location) * 0.001 /
-        ChronoUnit.HOURS.between(b.date, a.date))
+      case a :: b :: tail => Some(a.location.distanceInMeters(b.location) * 3600 / ChronoUnit.MILLIS.between(b.date, a.date))
       case _ => None
     }
 
     def addLocation(point : LocationPoint) = {
       val locations = lastLocations match {
-        case first::last if first.date != point.date => point::lastLocations
-        case Nil => point::Nil
+        case head :: tail if head.date != point.date => point :: lastLocations
+        case Nil => point :: Nil
         case _ => lastLocations
       }
       //no tak, tak, to jest niewydajne...

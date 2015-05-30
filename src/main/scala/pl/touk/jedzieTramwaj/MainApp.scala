@@ -29,7 +29,7 @@ object MainApp extends App with JsonProtocol with SprayJsonSupport {
 
   val location = system.actorOf(Props.create(classOf[LocationActor]))
 
-  val busStops = tramStopsProvider.busStops
+  val busStops = TramStopsProvider.busStops
   val busStopsMap = busStops
     .map(bs => (bs.id, bs))
     .toMap
